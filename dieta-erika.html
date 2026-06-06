@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Dieta Erika"/>
+<link rel="manifest" href="manifest-erika.json"/>
+<meta name="theme-color" content="#2d7a34"/>
+<title>Piano Alimentare · Erika Piras</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:Georgia,serif;background:linear-gradient(160deg,#f5fbf5 0%,#eaf4ea 60%,#e0f0f0 100%);min-height:100vh;color:#1a2e1a;}
+button{font-family:Georgia,serif;cursor:pointer;}
+::-webkit-scrollbar{display:none;}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#2d7a34;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;pointer-events:none;transition:all .3s;z-index:999;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#header{background:rgba(255,255,255,0.93);backdrop-filter:blur(10px);border-bottom:2px solid #a5d6a7;padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+#header .sub{font-size:10px;letter-spacing:3px;color:#7aaa7e;text-transform:uppercase;}
+#header .title{font-size:17px;font-weight:bold;color:#2d7a34;}
+.nav-btn{padding:7px 15px;border-radius:22px;border:2px solid;font-size:13px;font-weight:600;background:transparent;transition:all .2s;}
+.nav-btn.active{background:#2d7a34;border-color:#2d7a34;color:#fff;}
+.nav-btn:not(.active){border-color:#a5d6a7;color:#2d7a34;}
+.view{display:none;max-width:760px;margin:0 auto;padding:16px 13px 80px;}
+.view.active{display:block;}
+.banner{background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:12px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:#2e6e32;line-height:1.8;}
+#day-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none;}
+.day-tab{padding:7px 13px;border-radius:18px;border:2px solid #c0ddc0;background:white;color:#4a7a4a;font-size:13px;white-space:nowrap;flex-shrink:0;transition:all .2s;}
+.day-tab.active{background:#2d7a34;border-color:#2d7a34;color:#fff;font-weight:700;}
+#day-header{margin-bottom:12px;}
+#day-name{font-size:22px;font-weight:bold;color:#2d7a34;}
+.workout-badge{display:inline-block;margin-top:4px;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:16px;padding:3px 10px;font-size:11px;color:#e65100;font-weight:600;}
+.meal-card{background:rgba(255,255,255,0.93);border-radius:14px;border:1.5px solid #d0e8d0;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(40,80,40,0.06);}
+.meal-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none;}
+.meal-header.open{background:#f0f8f0;}
+.meal-icon{font-size:20px;}
+.meal-label{font-weight:700;font-size:14px;color:#2d7a34;}
+.meal-orario{font-weight:400;font-size:11px;color:#7aaa7e;margin-left:5px;}
+.meal-current{font-size:12px;color:#4a7a4a;margin-top:2px;}
+.meal-arrow{color:#7aaa7e;font-size:15px;transition:transform .2s;}
+.meal-arrow.open{transform:rotate(180deg);}
+.meal-body{display:none;padding:0 13px 13px;}
+.meal-body.open{display:block;}
+.meal-hint{font-size:11px;color:#7aaa7e;margin-bottom:8px;letter-spacing:.8px;text-transform:uppercase;}
+.section-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:10px 0 5px;padding-left:2px;}
+.section-label.original{color:#2d7a34;}
+.section-label.extra{color:#e67e22;}
+.opt-row{border-radius:10px;border:1.5px solid #ddeedd;background:#fafffe;padding:9px 10px;margin-bottom:6px;display:flex;align-items:flex-start;gap:9px;transition:all .2s;}
+.opt-row.selected{border-color:#2d7a34;background:#e8f5e9;}
+.opt-row.excluded{border-color:#f8d7da;background:#fff5f5;opacity:.5;}
+.opt-row.extra{border-color:#fde8c8;background:#fffaf4;}
+.opt-row.extra.selected{border-color:#e67e22;background:#fff3e0;}
+.opt-row.auto-switched{border-color:#ffe082;background:#fffde7;}
+.opt-check{width:20px;height:20px;border-radius:50%;border:2px solid #a5d6a7;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;flex-shrink:0;margin-top:2px;transition:all .18s;}
+.opt-check.on{background:#2d7a34;border-color:#2d7a34;}
+.opt-row.extra .opt-check{border-color:#f0a868;}
+.opt-row.extra.selected .opt-check{background:#e67e22;border-color:#e67e22;}
+.opt-name{font-weight:600;font-size:13px;color:#2d7a34;}
+.opt-row.extra .opt-name{color:#c0621a;}
+.opt-row.excluded .opt-name{color:#c0392b;text-decoration:line-through;}
+.opt-detail{font-size:11px;color:#6a8a6a;margin-top:2px;line-height:1.5;}
+.opt-tag{display:inline-block;font-size:9px;font-weight:700;border-radius:8px;padding:1px 6px;margin-top:3px;}
+.opt-tag.auto{background:#fff3cd;color:#856404;}
+.opt-tag.extra{background:#fde8c8;color:#a0460a;}
+.btn-exclude{background:#f0f0f0;border:none;border-radius:7px;padding:3px 7px;font-size:13px;flex-shrink:0;color:#aaa;}
+.opt-row.excluded .btn-exclude{background:#f8d7da;color:#c0392b;}
+/* SPESA */
+#view-spesa{max-width:660px;}
+.shop-header-card{background:rgba(255,255,255,0.93);border-radius:16px;border:1.5px solid #a5d6a7;padding:15px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(40,80,40,0.07);}
+.shop-title{font-size:19px;font-weight:bold;color:#2d7a34;}
+.shop-sub{font-size:12px;color:#7aaa7e;margin-top:2px;}
+.shop-pct{font-size:24px;font-weight:bold;color:#2d7a34;}
+.progress-track{background:#d0e8d0;border-radius:99px;height:9px;overflow:hidden;margin-top:9px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2d7a34,#66bb6a);border-radius:99px;transition:width .4s ease;}
+.shop-filters{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;}
+.filter-btn{padding:5px 12px;border-radius:16px;border:1.5px solid;font-size:12px;font-weight:600;background:transparent;transition:all .18s;}
+.filter-btn.active{background:#2d7a34;border-color:#2d7a34;color:#fff;}
+.filter-btn:not(.active){border-color:#a5d6a7;color:#2d7a34;}
+.btn-reset{margin-left:auto;padding:5px 12px;border-radius:16px;border:1.5px solid #ef9a9a;background:transparent;color:#c62828;font-size:12px;font-weight:600;}
+.cat-label{font-size:11px;font-weight:700;color:#2d7a34;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;padding-left:2px;}
+.cat-block{background:rgba(255,255,255,0.93);border-radius:14px;border:1.5px solid #d0e8d0;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 6px rgba(40,80,40,0.05);}
+.shop-item{padding:12px 13px;display:flex;align-items:center;gap:11px;border-bottom:1px solid #e8f3e8;transition:background .2s;}
+.shop-item:last-child{border-bottom:none;}
+.shop-item.bought{background:#f1f8f1;}
+.shop-item.incart{background:#fffde7;}
+.btn-buy{width:26px;height:26px;border-radius:8px;border:2px solid #b0d0b0;background:white;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;flex-shrink:0;transition:all .18s;}
+.btn-buy.on{background:#2d7a34;border-color:#2d7a34;}
+.item-name{font-size:14px;font-weight:600;color:#1a2e1a;transition:all .2s;}
+.shop-item.bought .item-name{color:#8aaa8a;text-decoration:line-through;}
+.item-qty{font-size:11px;color:#8aaa8a;margin-top:1px;}
+.btn-cart{padding:4px 9px;border-radius:12px;border:1.5px solid #c0d8c0;background:transparent;color:#7aaa7e;font-size:11px;font-weight:600;flex-shrink:0;white-space:nowrap;}
+.btn-cart.on{border-color:#ffb300;background:#fff8e1;color:#f57f17;}
+.ok-tag{font-size:12px;color:#7aaa7e;font-weight:600;}
+.shop-note{margin-top:16px;padding:12px 13px;background:#fff8e1;border:1.5px solid #ffe082;border-radius:12px;font-size:12px;color:#7b6000;line-height:1.6;}
+/* PASTO LIBERO */
+.custom-meal-card{background:rgba(255,255,255,0.93);border-radius:14px;border:2px dashed #a5d6a7;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(40,80,40,0.04);}
+.custom-meal-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.custom-meal-header.open{background:#f0f8f0;}
+.custom-meal-body{display:none;padding:0 13px 13px;}
+.custom-meal-body.open{display:block;}
+.custom-ing-row{display:flex;gap:6px;margin-bottom:5px;align-items:center;}
+.custom-ing-input{flex:1;padding:7px 9px;border-radius:8px;border:1.5px solid #c0ddc0;font-family:Georgia,serif;font-size:13px;outline:none;color:#1a2e1a;}
+.custom-ing-qty{width:72px;padding:7px 9px;border-radius:8px;border:1.5px solid #c0ddc0;font-family:Georgia,serif;font-size:13px;outline:none;color:#1a2e1a;}
+.custom-add-ing{padding:6px 12px;border-radius:8px;border:1.5px solid #a5d6a7;background:transparent;color:#2d7a34;font-size:13px;font-weight:700;}
+.custom-save-btn{width:100%;padding:9px;border-radius:10px;border:none;background:#2d7a34;color:white;font-family:Georgia,serif;font-size:14px;font-weight:700;margin-top:6px;}
+.custom-del-btn{background:transparent;border:none;color:#c0392b;font-size:16px;padding:2px 4px;flex-shrink:0;}
+/* STATS */
+.stats-card{background:rgba(255,255,255,0.93);border-radius:14px;border:1.5px solid #d0e8d0;padding:15px 14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(40,80,40,0.06);}
+.stats-title{font-size:15px;font-weight:700;color:#2d7a34;margin-bottom:2px;}
+.stats-sub{font-size:11px;color:#7aaa7e;margin-bottom:4px;}
+.bia-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.bia-field label{display:block;font-size:11px;color:#4a7a4a;font-weight:600;margin-bottom:4px;}
+.bia-field input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #c0ddc0;font-family:Georgia,serif;font-size:14px;color:#1a2e1a;outline:none;background:white;}
+.bia-field input:focus{border-color:#2d7a34;}
+.bia-badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+.bia-badge{padding:5px 11px;border-radius:12px;background:#e8f5e9;border:1.5px solid #a5d6a7;font-size:12px;color:#2d7a34;font-weight:600;}
+.bia-badge.warn{background:#fff8e1;border-color:#ffe082;color:#8a6000;}
+.kcal-bar-row{display:flex;align-items:flex-end;gap:5px;height:90px;margin-bottom:4px;}
+.kcal-bar-col{display:flex;flex-direction:column;align-items:center;flex:1;}
+.kcal-bar-wrap{width:100%;display:flex;align-items:flex-end;justify-content:center;height:70px;}
+.kcal-bar-inner{width:80%;border-radius:5px 5px 0 0;transition:height .4s ease;min-height:3px;}
+.kcal-bar-lbl{font-size:10px;color:#7aaa7e;margin-top:3px;text-align:center;}
+.kcal-bar-val{font-size:9px;color:#4a7a4a;font-weight:600;margin-bottom:2px;}
+.adh-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.adh-day{font-size:12px;font-weight:700;color:#2d7a34;width:28px;flex-shrink:0;}
+.adh-track{flex:1;background:#d0e8d0;border-radius:99px;height:10px;overflow:hidden;}
+.adh-fill{height:100%;border-radius:99px;transition:width .4s ease;}
+.adh-pct{font-size:11px;color:#4a7a4a;font-weight:600;width:34px;text-align:right;flex-shrink:0;}
+.adh-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+/* CALORIE CARD */
+.kcal-card{background:linear-gradient(135deg,#e8f5e9,#f0faf0);border:2px solid #a5d6a7;border-radius:16px;padding:15px 16px;margin-top:14px;margin-bottom:4px;}
+.kcal-title{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#4a7a4a;margin-bottom:10px;}
+.kcal-total{font-size:32px;font-weight:bold;color:#2d7a34;line-height:1;}
+.kcal-label{font-size:11px;color:#7aaa7e;margin-top:2px;}
+.kcal-bar-track{background:#c8e6c9;border-radius:99px;height:8px;overflow:hidden;margin:10px 0 8px;}
+.kcal-bar-fill{height:100%;border-radius:99px;transition:width .5s ease;background:linear-gradient(90deg,#43a047,#aed581);}
+.kcal-bar-fill.over{background:linear-gradient(90deg,#ef6c00,#ffb300);}
+.kcal-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.kcal-item{background:rgba(255,255,255,0.7);border-radius:10px;padding:7px 8px;text-align:center;}
+.kcal-item-val{font-size:15px;font-weight:700;color:#2d7a34;}
+.kcal-item-lbl{font-size:10px;color:#7aaa7e;margin-top:1px;}
+.kcal-note{font-size:10px;color:#9aaa9a;margin-top:8px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<div id="header">
+  <div>
+    <div class="sub">Piano Alimentare</div>
+    <div class="title">Erika Piras · Marzo 2026</div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="nav-btn active" onclick="switchView('menu')">📅 Menù</button>
+    <button class="nav-btn" onclick="switchView('spesa')">🛒 Spesa</button>
+    <button class="nav-btn" onclick="switchView('stats')">📊 Stats</button>
+  </div>
+</div>
+
+<div class="view active" id="view-menu">
+  <div class="banner">
+    💊 <b>Ogni giorno:</b> Vit. D · 3g creatina dopo colazione &nbsp;|&nbsp;
+    💧 <b>Acqua:</b> ≥2L/die · 500ml pre-allenamento &nbsp;|&nbsp;
+    🧂 <b>Sale:</b> max 2 cucchiaini/settimana a crudo
+  </div>
+  <div id="day-tabs"></div>
+  <div id="day-header">
+    <div id="day-name"></div>
+    <div id="workout-badge" style="display:none;" class="workout-badge">🏋️ Giorno di allenamento · Colazione ~1h30 prima</div>
+  </div>
+  <div id="meals-container"></div>
+  <!-- Pasto a piacere -->
+  <div id="custom-meals-container"></div>
+  <div style="margin-top:4px;">
+    <button onclick="addCustomMeal()" style="width:100%;padding:11px;border-radius:12px;border:2px dashed #a5d6a7;background:transparent;color:#2d7a34;font-family:Georgia,serif;font-size:14px;font-weight:600;">➕ Aggiungi pasto a piacere</button>
+  </div>
+  <!-- Calorie del giorno -->
+  <div class="kcal-card" id="kcal-card">
+    <div class="kcal-title">🔥 Stima calorie del giorno</div>
+    <div style="display:flex;align-items:flex-end;gap:8px;">
+      <div class="kcal-total" id="kcal-total">—</div>
+      <div class="kcal-label">kcal totali stimate</div>
+    </div>
+    <div class="kcal-bar-track"><div class="kcal-bar-fill" id="kcal-bar" style="width:0%"></div></div>
+    <div class="kcal-breakdown" id="kcal-breakdown"></div>
+    <div class="kcal-note">⚠️ Stime indicative basate sulle porzioni medie del piano. Non sostituiscono il parere del nutrizionista.</div>
+  </div>
+</div>
+
+<div class="view" id="view-spesa">
+  <div class="shop-header-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div class="shop-title">Lista della Spesa</div>
+        <div class="shop-sub" id="shop-sub">0 di 0 prodotti acquistati</div>
+      </div>
+      <div class="shop-pct" id="shop-pct">0%</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="shop-filters">
+      <button class="filter-btn active" onclick="setFilter('all')">Tutti</button>
+      <button class="filter-btn" onclick="setFilter('todo')">Da comprare</button>
+      <button class="filter-btn" onclick="setFilter('done')">Acquistati ✓</button>
+      <button class="btn-reset" onclick="resetShop()">🔄 Reset</button>
+    </div>
+  </div>
+  <div id="shop-list"></div>
+  <div class="shop-note">💡 <b>Nota:</b> La lista include i pasti selezionati nel menù. Spunta ✓ per segnare acquistato, "+ Carrello" per tenerlo a mente.</div>
+
+  <div style="margin-top:20px;">
+    <div class="cat-label">➕ Aggiungi prodotti extra</div>
+    <div class="cat-block" style="padding:12px 13px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="free-input" type="text" placeholder="Es: pasta, latte, pane..." style="flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid #c0ddc0;font-family:Georgia,serif;font-size:14px;outline:none;color:#1a2e1a;" onkeydown="if(event.key==='Enter')addFreeItem()"/>
+        <button onclick="addFreeItem()" style="padding:9px 16px;border-radius:10px;border:none;background:#2d7a34;color:white;font-family:Georgia,serif;font-size:14px;font-weight:700;">+</button>
+      </div>
+    </div>
+    <div id="free-list"></div>
+  </div>
+</div>
+
+<div class="view" id="view-stats">
+  <div class="stats-card">
+    <div class="stats-title">📏 Valori BIA</div>
+    <div class="stats-sub">Inserisci i valori dell'ultima misurazione</div>
+    <div class="bia-grid" id="bia-form">
+      <div class="bia-field"><label>⚖️ Peso (kg)</label><input type="number" step="0.1" id="bia-peso" placeholder="es. 58.5" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>📊 BMI</label><input type="number" step="0.1" id="bia-bmi" placeholder="es. 22.1" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>🔴 Massa grassa (%)</label><input type="number" step="0.1" id="bia-grassa-pct" placeholder="es. 22.0" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>🔴 Massa grassa (kg)</label><input type="number" step="0.1" id="bia-grassa-kg" placeholder="es. 12.9" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>💪 Massa magra (kg)</label><input type="number" step="0.1" id="bia-magra" placeholder="es. 45.6" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>💧 Acqua corporea (%)</label><input type="number" step="0.1" id="bia-acqua" placeholder="es. 56.0" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>🔥 Metabolismo basale (kcal)</label><input type="number" step="1" id="bia-bmr" placeholder="es. 1380" oninput="saveBia()"/></div>
+      <div class="bia-field"><label>🎯 Kcal target/die</label><input type="number" step="1" id="bia-target" placeholder="es. 1600" oninput="saveBia()"/></div>
+    </div>
+    <div id="bia-summary" style="margin-top:12px;"></div>
+  </div>
+  <div class="stats-card">
+    <div class="stats-title">📊 Calorie settimanali</div>
+    <div class="stats-sub">Stima kcal per ogni giorno · verde = nel target</div>
+    <div id="kcal-chart" style="margin-top:12px;"></div>
+  </div>
+  <div class="stats-card">
+    <div class="stats-title">🗓 Aderenza al piano</div>
+    <div class="stats-sub">Quanti pasti della dieta hai seguito questa settimana</div>
+    <div id="adherence-chart" style="margin-top:12px;"></div>
+    <div id="adherence-summary" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<script>
+const GIORNI = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
+
+// extra = alternative aggiuntive create appositamente (no pesce tranne tonno ven, no legumi, no funghi, no peperoni, no verza, no vellutate)
+const PIANO = {
+  "Lunedì":{
+    colazione:{tipo:"standard",opzioni:[
+      {id:"col-lun-a",label:"Latte + Cereali + Biscotti",dettaglio:"200ml latte p.s. + 30g cereali integrali + 50g biscotti secchi"},
+      {id:"col-lun-b",label:"Bowl Skyr/Yogurt/Kefir",dettaglio:"150g yogurt/skyr + banana + 150g kiwi + miele + 35g fiocchi avena + frutti di bosco + crema arachidi"},
+      {id:"col-lun-x1",label:"Yogurt greco + fette biscottate + frutta",dettaglio:"170g yogurt greco magro + 2 fette biscottate integrali + velo marmellata + 1 frutto fresco",extra:true},
+      {id:"col-lun-x2",label:"Latte + porridge fresco con frutta",dettaglio:"200ml latte p.s. + 40g fiocchi avena (preparati la sera e lasciati in frigo) + 150g fragole o altra frutta + miele",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-lun-a",label:"Yogurt greco + frutto",dettaglio:"125g yogurt greco magro + 1 frutto di stagione"},
+      {id:"sm-lun-b",label:"Pancake dolce",dettaglio:"1 albume + 40g farina + 50ml latte + cacao 5g + lievito + marmellata"},
+      {id:"sm-lun-x1",label:"Skyr + frutti di bosco + granola",dettaglio:"150g skyr + 80g frutti di bosco freschi + 20g granola senza zucchero",extra:true},
+      {id:"sm-lun-x2",label:"Fette Wasa + crema arachidi + banana",dettaglio:"2 fette Wasa integrali + velo crema arachidi 100% + mezza banana a fettine",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-lun-a",label:"Riso basmati con pollo e curry",dettaglio:"100g riso basmati + curry + 150g straccetti di pollo + 1 frutto + 1.5 cuc. olio evo"},
+      {id:"pr-lun-b",label:"Riso con radicchio e pollo",dettaglio:"100g riso + radicchio QB + 150g pollo + 1.5 cuc. olio evo"},
+      {id:"pr-lun-c",label:"Riso allo zafferano + carote + pollo",dettaglio:"100g riso + zafferano + carote QB + 150g pollo + 1.5 cuc. olio evo"},
+      {id:"pr-lun-x1",label:"Riso basmati freddo + pollo ai ferri + insalata",dettaglio:"🍚 100g riso basmati freddo con pomodorini e basilico · 🍗 150g pollo ai ferri · 🥗 rucola con limone e olio evo 1.5 cuc.",extra:true},
+      {id:"pr-lun-x2",label:"Farro freddo + tacchino ai ferri + verdure",dettaglio:"🌾 100g farro lessato freddo · 🍗 150g tacchino ai ferri · 🥗 cetrioli, pomodorini, basilico + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-lun-a",label:"Bresaola + parmigiano + Wasa",dettaglio:"30g bresaola + 10g parmigiano + rucola + 3 fette Wasa (30g) + limone"},
+      {id:"sp-lun-b",label:"Yogurt greco magro",dettaglio:"170g yogurt greco magro gusto a scelta"},
+      {id:"sp-lun-x1",label:"Skyr + frutto fresco",dettaglio:"150g skyr gusto a scelta + 1 pesca o albicocche o altro frutto estivo",extra:true},
+      {id:"sp-lun-x2",label:"Gallette di riso + ricotta + pomodorini",dettaglio:"3 gallette di riso + 40g ricotta vaccina + pomodorini + origano",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-lun-a",label:"Frittata al forno con ricotta e tacchino",dettaglio:"2 uova + 30g ricotta + 20g fesa tacchino + 250g broccoletti trifolati + 50g pane integrale + 1.5 cuc. olio evo"},
+      {id:"ce-lun-b",label:"Omelette con parmigiano e affettato",dettaglio:"2 uova + 20g parmigiano + 40g fesa/prosciutto + 250g verdura cotta + 50g pane + 1.5 cuc. olio evo"},
+      {id:"ce-lun-c",label:"Omelette con ricotta e ortaggio",dettaglio:"2 uova + 40g ricotta + ortaggio QB + 50g pane + 1.5 cuc. olio evo"},
+      {id:"ce-lun-x1",label:"Frittata fredda con zucchine e menta",dettaglio:"2 uova + 150g zucchine grigliate + menta fresca + 50g pane integrale + insalatina + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-lun-x2",label:"Petto di pollo ai ferri + insalata fresca + pane",dettaglio:"160g petto di pollo + 200g insalata mista + pomodorini + cetrioli + 50g pane integrale + 1.5 cuc. olio evo",extra:true},
+    ]}
+  },
+  "Martedì":{
+    colazione:{tipo:"pre-allenamento",opzioni:[
+      {id:"col-mar-a",label:"Latte + fette biscottate + crema arachidi",dettaglio:"200ml latte p.s. + 3 fette biscottate integrali (60g) + velo burro arachidi 100% + velo marmellata senza zuccheri"},
+      {id:"col-mar-b",label:"Porridge con avena e frutta",dettaglio:"200ml latte p.s. + 50g fiocchi avena + acqua q.b. + 200g frutta a pezzi"},
+      {id:"col-mar-x1",label:"Overnight oats freschi",dettaglio:"50g fiocchi avena + 150ml latte p.s. + 1 cucchiaino miele + 150g frutti di bosco freschi (preparati la sera prima in frigo)",extra:true},
+      {id:"col-mar-x2",label:"Toast integrale con crema arachidi e banana",dettaglio:"2 fette pane integrale tostato + velo crema arachidi 100% + mezza banana + 200ml latte p.s.",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-mar-a",label:"Yogurt greco + barretta Nutzer Prozis",dettaglio:"170g yogurt greco + 1 barretta Nutzer Prozis (45g)"},
+      {id:"sm-mar-b",label:"Pancake post-allenamento + spremuta",dettaglio:"1 albume + 40g farina + 50ml latte + cacao + lievito + marmellata + 200ml spremuta arancia"},
+      {id:"sm-mar-x1",label:"Smoothie proteico post-allenamento",dettaglio:"150g yogurt greco + 1 banana + 200ml latte p.s. + 1 cucchiaino miele + cannella — frullato e freddo",extra:true},
+      {id:"sm-mar-x2",label:"Gallette + ricotta + marmellata + frutto",dettaglio:"3 gallette di riso + 50g ricotta vaccina + velo marmellata senza zuccheri + 1 frutto fresco",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-mar-a",label:"Pasta e zucca + formaggio fresco",dettaglio:"120g pasta + zucca QB + 100g formaggio fresco magro + 150g insalata mista + 1.5 cuc. olio evo"},
+      {id:"pr-mar-b",label:"Pasta e ortaggio + formaggio",dettaglio:"120g pasta + ortaggio a scelta + 100g formaggio + insalata + 1.5 cuc. olio evo"},
+      {id:"pr-mar-c",label:"Pasta, rucola e feta (piatto unico)",dettaglio:"120g pasta integrale + rucola tritata + 80g feta greca a pezzettini + 1.5 cuc. olio evo"},
+      {id:"pr-mar-x1",label:"Pasta fredda al pomodoro + pollo ai ferri + insalata",dettaglio:"🍝 120g pasta fredda con pomodorini e basilico · 🍗 120g pollo ai ferri · 🥗 150g insalata mista + 1.5 cuc. olio evo",extra:true},
+      {id:"pr-mar-x2",label:"Pasta fredda al pesto leggero + tacchino + zucchine",dettaglio:"🍝 120g pasta fredda con basilico, olio e limone · 🍗 100g tacchino ai ferri · 🥗 150g zucchine grigliate fredde + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-mar-a",label:"Yogurt/Skyr/Kefir + frutto",dettaglio:"125g yogurt/skyr/kefir + 1 frutto fresco di stagione con buccia"},
+      {id:"sp-mar-b",label:"Crepes salata",dettaglio:"albume + farina + latte + farcitura salata a scelta"},
+      {id:"sp-mar-x1",label:"Skyr + pesca + granola",dettaglio:"150g skyr + 1 pesca a pezzetti + 20g granola",extra:true},
+      {id:"sp-mar-x2",label:"Bresaola + rucola + limone",dettaglio:"30g bresaola + rucola + limone + 10g parmigiano a scaglie",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-mar-a",label:"Vellutata porri e patate + burger vegetale",dettaglio:"150g porri + 1 patata piccola + 150g burger vegetale/ceci + 50g pane + 1.5 cuc. olio evo"},
+      {id:"ce-mar-b",label:"Vellutata di zucca + burger vegetale",dettaglio:"180g zucca + 1 patata + 2 cuc. parmigiano + 150g burger vegetale + 50g pane + 1.5 cuc. olio evo"},
+      {id:"ce-mar-c",label:"Verdura cotta + patate al forno + burger",dettaglio:"200g verdura cotta + 150g patate al forno + 150g burger vegetale + 1.5 cuc. olio evo"},
+      {id:"ce-mar-x1",label:"Pollo ai ferri + insalata fresca + patate lesse",dettaglio:"160g petto di pollo + 200g insalata mista + pomodorini + 150g patate lesse fredde + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-mar-x2",label:"Tacchino in padella con zucchine + pane",dettaglio:"160g fesa di tacchino + 200g zucchine trifolate + 50g pane integrale + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-mar-x3",label:"Omelette con asparagi e parmigiano + pane",dettaglio:"2 uova + 150g asparagi cotti + 15g parmigiano + 50g pane integrale + insalatina + 1.5 cuc. olio evo",extra:true},
+    ]}
+  },
+  "Mercoledì":{
+    colazione:{tipo:"standard",opzioni:[
+      {id:"col-mer-a",label:"Latte + Cereali + Biscotti",dettaglio:"200ml latte p.s. + 30g cereali integrali + 50g biscotti secchi"},
+      {id:"col-mer-b",label:"Bowl Skyr/Yogurt/Kefir",dettaglio:"150g yogurt/skyr + banana + 150g frutto + miele + 35g fiocchi + frutti di bosco + crema arachidi"},
+      {id:"col-mer-x1",label:"Yogurt greco + muesli + fragole",dettaglio:"170g yogurt greco magro + 30g muesli senza zucchero + 100g fragole fresche + miele",extra:true},
+      {id:"col-mer-x2",label:"Latte + fette biscottate + ricotta e miele",dettaglio:"200ml latte p.s. + 2 fette biscottate integrali + 40g ricotta vaccina + 1 cucchiaino miele",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-mer-a",label:"Yogurt greco + frutto",dettaglio:"125g yogurt greco + 1 frutto di stagione"},
+      {id:"sm-mer-b",label:"Pancake dolce o salato",dettaglio:"1 albume + 40g farina + 50ml latte + cacao/parmigiano + lievito + farcitura"},
+      {id:"sm-mer-x1",label:"Frutto + 2 noci o mandorle",dettaglio:"1 frutto fresco di stagione + 15g noci o mandorle (piccolo spuntino fresco)",extra:true},
+      {id:"sm-mer-x2",label:"Skyr + miele + frutta secca",dettaglio:"150g skyr + 1 cucchiaino miele + 10g noci tritate",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-mer-a",label:"Pasta grano saraceno + zucchine + tacchino",dettaglio:"100g pasta grano saraceno + crema zucchine + 150g petto tacchino + 150g insalata + 1.5 cuc. olio evo"},
+      {id:"pr-mer-b",label:"Pasta e ortaggio + carne magra",dettaglio:"100g pasta + ortaggio a scelta + 150g carne magra + insalata + 1.5 cuc. olio evo"},
+      {id:"pr-mer-c",label:"Pasta integrale sugo semplice + tacchino",dettaglio:"100g pasta integrale + sugo semplice + 150g carne magra + insalata + 1.5 cuc. olio evo"},
+      {id:"pr-mer-x1",label:"Pasta fredda al pomodoro + tacchino ai ferri + insalata",dettaglio:"🍝 100g pasta fredda con pomodorini e basilico · 🍗 150g tacchino ai ferri · 🥗 rucola con limone + 1.5 cuc. olio evo",extra:true},
+      {id:"pr-mer-x2",label:"Orzo freddo al limone + pollo + cetrioli e carote",dettaglio:"🌾 100g orzo freddo con limone e olio · 🍗 150g pollo ai ferri · 🥗 cetrioli e carote a julienne + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-mer-a",label:"Bresaola + parmigiano + Wasa",dettaglio:"30g bresaola + 10g parmigiano + rucola + 3 fette Wasa (30g) + limone"},
+      {id:"sp-mer-b",label:"Yogurt greco magro",dettaglio:"170g yogurt greco magro gusto a scelta"},
+      {id:"sp-mer-x1",label:"Pane di segale + ricotta + pomodorino",dettaglio:"1 fetta pane di segale (30g) + 40g ricotta + pomodorini + sale e origano",extra:true},
+      {id:"sp-mer-x2",label:"Frutto + skyr",dettaglio:"1 frutto estivo (pesca, albicocca, anguria) + 125g skyr",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-mer-a",label:"Fettina di vitello + spinaci + patate",dettaglio:"160g vitello ai ferri + 250g spinaci trifolati + 200g patate al forno + 1.5 cuc. olio evo"},
+      {id:"ce-mer-b",label:"Carne rossa magra + verdura + patate",dettaglio:"160g carne rossa magra + 250g verdura cotta + 200g patate novelle + 1.5 cuc. olio evo"},
+      {id:"ce-mer-x1",label:"Vitello ai ferri + insalata fresca + patate lesse",dettaglio:"160g vitello + 200g insalata mista (lattuga, cetrioli, pomodorini) + 180g patate lesse + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-mer-x2",label:"Petto di pollo + zucchine grigliate + pane",dettaglio:"160g petto di pollo ai ferri + 200g zucchine grigliate fredde + 50g pane integrale + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-mer-x3",label:"Carpaccio di manzo + rucola + parmigiano",dettaglio:"150g carpaccio di manzo crudo + rucola + 15g scaglie parmigiano + limone + 1.5 cuc. olio evo + 50g pane",extra:true},
+    ]}
+  },
+  "Giovedì":{
+    colazione:{tipo:"pre-allenamento",opzioni:[
+      {id:"col-gio-a",label:"Latte + fette biscottate + crema arachidi",dettaglio:"200ml latte p.s. + 3 fette biscottate (60g) + velo burro arachidi 100% + velo marmellata senza zuccheri"},
+      {id:"col-gio-b",label:"Porridge con avena e frutta",dettaglio:"200ml latte p.s. + 50g fiocchi avena + acqua q.b. + 200g frutta a pezzi"},
+      {id:"col-gio-x1",label:"Overnight oats con banana e cacao",dettaglio:"50g fiocchi avena + 150ml latte p.s. + 1 banana + 1 cucchiaino cacao amaro (preparato la sera in frigo)",extra:true},
+      {id:"col-gio-x2",label:"Yogurt greco + granola + frutta estiva",dettaglio:"170g yogurt greco + 25g granola + 150g melone o anguria o pesche",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-gio-a",label:"Yogurt greco + barretta Nutzer Prozis",dettaglio:"170g yogurt greco + 1 barretta Nutzer Prozis (45g)"},
+      {id:"sm-gio-b",label:"Pancake post-allenamento + spremuta",dettaglio:"1 albume + 40g farina + 50ml latte + cacao + lievito + marmellata + 200ml spremuta arancia"},
+      {id:"sm-gio-x1",label:"Frullato post-allenamento",dettaglio:"200ml latte p.s. + 1 banana + 150g yogurt greco + 1 cucchiaino miele — freddo",extra:true},
+      {id:"sm-gio-x2",label:"Pane integrale + crema arachidi + marmellata",dettaglio:"40g pane integrale + velo crema arachidi + velo marmellata senza zuccheri + 1 frutto",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-gio-a",label:"Riso/farro + piselli + pollo",dettaglio:"80g riso/farro + 20g piselli + 150g straccetti di pollo + 1.5 cuc. olio evo"},
+      {id:"pr-gio-b",label:"Riso/orzo con radicchio + carne bianca",dettaglio:"80g riso/orzo + radicchio QB + 150g carne bianca + 1.5 cuc. olio evo"},
+      {id:"pr-gio-c",label:"Riso allo zafferano + carne bianca",dettaglio:"80g riso + zafferano + 150g carne bianca + 1.5 cuc. olio evo"},
+      {id:"pr-gio-x1",label:"Farro freddo al limone + pollo ai ferri + pomodorini",dettaglio:"🌾 80g farro freddo con limone e basilico · 🍗 150g pollo ai ferri · 🍅 cetrioli e pomodorini + 1.5 cuc. olio evo",extra:true},
+      {id:"pr-gio-x2",label:"Riso basmati freddo allo zafferano + tacchino + carote",dettaglio:"🍚 80g riso basmati freddo con zafferano · 🍗 150g tacchino ai ferri · 🥗 100g carote a julienne + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-gio-a",label:"Yogurt/Skyr/Kefir + frutto",dettaglio:"125g yogurt/skyr/kefir + 1 frutto fresco di stagione con buccia"},
+      {id:"sp-gio-b",label:"Crepes salata",dettaglio:"albume + farina + latte + farcitura salata a scelta"},
+      {id:"sp-gio-x1",label:"Bresaola + gallette + limone",dettaglio:"30g bresaola + 3 gallette di riso + limone + rucola",extra:true},
+      {id:"sp-gio-x2",label:"Anguria + skyr",dettaglio:"200g anguria fresca + 125g skyr — fresco e idratante",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-gio-a",label:"Zuppa riso basmati e verza + frittata",dettaglio:"120g riso + 150g verza + 2 uova + ortaggio QB + 1.5 cuc. olio evo"},
+      {id:"ce-gio-b",label:"Riso integrale allo zafferano + frittata",dettaglio:"120g riso integrale + zafferano + 2 uova + ortaggio + 1.5 cuc. olio evo"},
+      {id:"ce-gio-c",label:"Grano saraceno al radicchio + frittata",dettaglio:"120g grano saraceno + radicchio rosso + 2 uova + ortaggio + 1.5 cuc. olio evo"},
+      {id:"ce-gio-x1",label:"Riso basmati freddo + frittata di zucchine + insalata",dettaglio:"🍚 120g riso basmati freddo · 🍳 frittata con 2 uova e 150g zucchine · 🥗 insalatina fresca + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-gio-x2",label:"Orzo freddo al pomodoro · pollo ai ferri · insalata",dettaglio:"🌾 120g orzo freddo con pomodorini e basilico · 🍗 150g pollo ai ferri · 🥗 insalata fresca + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-gio-x3",label:"Frittata di zucchine al forno + insalata + pane",dettaglio:"2 uova + 150g zucchine + 15g parmigiano + 200g insalata fresca + 50g pane + 1.5 cuc. olio evo",extra:true},
+    ]}
+  },
+  "Venerdì":{
+    colazione:{tipo:"standard",opzioni:[
+      {id:"col-ven-a",label:"Latte + Cereali + Biscotti",dettaglio:"200ml latte p.s. + 30g cereali integrali + 50g biscotti secchi"},
+      {id:"col-ven-b",label:"Bowl Skyr/Yogurt/Kefir",dettaglio:"150g yogurt/skyr + banana + 150g frutto + miele + 35g fiocchi + frutti di bosco + crema arachidi"},
+      {id:"col-ven-x1",label:"Yogurt greco + fette biscottate + frutta",dettaglio:"170g yogurt greco + 2 fette biscottate integrali + velo marmellata + 1 frutto fresco",extra:true},
+      {id:"col-ven-x2",label:"Latte + muesli + fragole",dettaglio:"200ml latte p.s. + 35g muesli senza zucchero + 100g fragole fresche",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-ven-a",label:"Yogurt greco + frutto",dettaglio:"125g yogurt greco + 1 frutto di stagione"},
+      {id:"sm-ven-b",label:"Pancake dolce o salato",dettaglio:"1 albume + 40g farina + 50ml latte + cacao/parmigiano + lievito + farcitura"},
+      {id:"sm-ven-x1",label:"Skyr + granola + albicocche",dettaglio:"150g skyr + 20g granola + 2-3 albicocche fresche",extra:true},
+      {id:"sm-ven-x2",label:"Gallette + crema arachidi + frutto",dettaglio:"3 gallette di riso + velo crema arachidi + 1 frutto fresco",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-ven-a",label:"Pasta, broccoli e tonno",dettaglio:"100g pasta + 160g tonno al naturale + 150g broccoli + 1 frutto + 1.5 cuc. olio evo"},
+      {id:"pr-ven-b",label:"Pasta, tonno e spinaci",dettaglio:"100g pasta + 160g tonno + 150g spinaci + 1 frutto + 1.5 cuc. olio evo"},
+      {id:"pr-ven-c",label:"Pasta tonno e cime di rapa",dettaglio:"100g pasta + 160g tonno + 150g cime di rapa + 1 frutto + 1.5 cuc. olio evo"},
+      {id:"pr-ven-d",label:"Pasta integrale, broccoli e tonno",dettaglio:"100g pasta integrale + 160g tonno + 150g broccoli + 1 frutto + 1.5 cuc. olio evo"},
+      {id:"pr-ven-x1",label:"Pasta fredda al pomodoro + tonno + insalata",dettaglio:"🍝 100g pasta fredda con pomodorini, capperi e basilico · 🐟 160g tonno al naturale · 🥗 rucola con limone + 1.5 cuc. olio evo",extra:true},
+      {id:"pr-ven-x2",label:"Orzo freddo al limone + tonno + cetrioli e carote",dettaglio:"🌾 100g orzo freddo con limone e olio · 🐟 160g tonno al naturale · 🥗 cetrioli, pomodorini e carote a julienne + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-ven-a",label:"Bresaola + parmigiano + Wasa",dettaglio:"30g bresaola + 10g parmigiano + rucola + 3 fette Wasa (30g) + limone"},
+      {id:"sp-ven-b",label:"Yogurt greco magro",dettaglio:"170g yogurt greco magro gusto a scelta"},
+      {id:"sp-ven-x1",label:"Anguria + skyr",dettaglio:"200g anguria fresca + 125g skyr",extra:true},
+      {id:"sp-ven-x2",label:"Gallette + ricotta + pomodorini",dettaglio:"3 gallette di riso + 40g ricotta vaccina + pomodorini + origano",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-ven-a",label:"Vellutata porri e patate + frittata tacchino",dettaglio:"150g porri + 1 patata piccola + 1 uovo + 1 albume + 1 cuc. ricotta + 20g fesa + 50g pane + 1.5 cuc. olio evo"},
+      {id:"ce-ven-b",label:"Vellutata zucca + frittata con parmigiano",dettaglio:"180g zucca + 1 patata + 1 uovo + 1 albume + 10g parmigiano + 20g fesa + 50g pane + 1.5 cuc. olio evo"},
+      {id:"ce-ven-c",label:"Vellutata zucca e carote + frittata",dettaglio:"180g zucca + 100g carote + 1 uovo + 1 albume + ricotta + ortaggio + 1.5 cuc. olio evo"},
+      {id:"ce-ven-x1",label:"Frittata di fesa e zucchine + insalata + pane",dettaglio:"2 uova + 20g fesa + 150g zucchine grigliate + 200g insalata fresca + 50g pane integrale + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-ven-x2",label:"Tacchino ai ferri + pomodori + patate",dettaglio:"160g fesa di tacchino + 200g pomodori a fette con basilico + 150g patate lesse + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-ven-x3",label:"Omelette con asparagi + pane + insalata",dettaglio:"2 uova + 150g asparagi + 15g parmigiano + 50g pane + 200g insalata fresca + 1.5 cuc. olio evo",extra:true},
+    ]}
+  },
+  "Sabato":{
+    colazione:{tipo:"pre-allenamento",opzioni:[
+      {id:"col-sab-a",label:"Latte + fette biscottate + crema arachidi",dettaglio:"200ml latte p.s. + 3 fette biscottate (60g) + velo burro arachidi 100% + velo marmellata senza zuccheri"},
+      {id:"col-sab-b",label:"Porridge con avena e frutta",dettaglio:"200ml latte p.s. + 50g fiocchi avena + acqua q.b. + 200g frutta a pezzi"},
+      {id:"col-sab-x1",label:"Overnight oats con frutti di bosco",dettaglio:"50g fiocchi avena + 150ml latte p.s. + 100g frutti di bosco + 1 cucchiaino miele (preparato la sera)",extra:true},
+      {id:"col-sab-x2",label:"Toast integrale + uovo + frutto",dettaglio:"2 fette pane integrale tostato + 1 uovo strapazzato + 1 frutto fresco + 200ml latte p.s.",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-sab-a",label:"Yogurt greco + barretta Nutzer Prozis",dettaglio:"170g yogurt greco + 1 barretta Nutzer Prozis (45g)"},
+      {id:"sm-sab-b",label:"Pancake post-allenamento + spremuta",dettaglio:"1 albume + 40g farina + 50ml latte + cacao + lievito + marmellata + 200ml spremuta arancia"},
+      {id:"sm-sab-x1",label:"Frullato banana e yogurt post-allenamento",dettaglio:"150g yogurt greco + 1 banana + 200ml latte p.s. + cannella — freddo",extra:true},
+      {id:"sm-sab-x2",label:"Gallette + ricotta dolce + frutta",dettaglio:"3 gallette di riso + 50g ricotta + 1 cucchiaino miele + 1 frutto fresco",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-sab-a",label:"Pasta e crema di broccoli + formaggio",dettaglio:"100g pasta + broccoli QB + 90g formaggio fresco magro + 150g insalata + 1.5 cuc. olio evo"},
+      {id:"pr-sab-b",label:"Pasta e ortaggio + formaggio",dettaglio:"100g pasta + ortaggio a scelta + 90g formaggio + insalata + 1.5 cuc. olio evo"},
+      {id:"pr-sab-c",label:"Pasta integrale sugo semplice + formaggio",dettaglio:"100g pasta integrale + sugo + 90g formaggio magro + insalata + 1.5 cuc. olio evo"},
+      {id:"pr-sab-x1",label:"Pasta fredda caprese",dettaglio:"100g pasta raffreddata + 80g mozzarella light + pomodorini + basilico + 1.5 cuc. olio evo",extra:true},
+      {id:"pr-sab-x2",label:"Insalatone di riso con feta e verdure",dettaglio:"100g riso basmati freddo + 80g feta + cetrioli + pomodorini + olive nere poche + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-sab-a",label:"Yogurt/Skyr/Kefir + frutto",dettaglio:"125g yogurt/skyr/kefir + 1 frutto fresco di stagione con buccia"},
+      {id:"sp-sab-b",label:"Crepes salata",dettaglio:"albume + farina + latte + farcitura salata a scelta"},
+      {id:"sp-sab-x1",label:"Anguria o melone fresco",dettaglio:"250g anguria o melone — fresco e idratante prima della cena libera",extra:true},
+      {id:"sp-sab-x2",label:"Skyr + granola + pesche",dettaglio:"150g skyr + 20g granola + 1 pesca fresca a pezzetti",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-sab-a",label:"🎉 CENA LIBERA",dettaglio:"Cena libera — modera le quantità!"},
+    ]}
+  },
+  "Domenica":{
+    colazione:{tipo:"standard",opzioni:[
+      {id:"col-dom-a",label:"Latte + fette biscottate + marmellata",dettaglio:"200ml latte p.s. + 2 fette biscottate integrali (40g) + velo marmellata bio"},
+      {id:"col-dom-b",label:"Yogurt/Skyr + ciambellone fatto in casa",dettaglio:"125g yogurt p.s. + 1 fetta ciambellone semplice fatto in casa"},
+      {id:"col-dom-x1",label:"Bowl fresca estiva",dettaglio:"150g skyr + 100g fragole o frutti di bosco + 1 kiwi + 25g fiocchi avena + 1 cucchiaino miele",extra:true},
+      {id:"col-dom-x2",label:"Pancakes domenicali con frutta fresca",dettaglio:"2 albumi + 50g farina + 80ml latte + 1 cucchiaino miele + lievito — servire con frutti di bosco e velo marmellata",extra:true},
+    ]},
+    spuntino_mattina:{opzioni:[
+      {id:"sm-dom-a",label:"Frutto fresco di stagione",dettaglio:"1 frutto fresco di stagione (se possibile con buccia)"},
+      {id:"sm-dom-x1",label:"Frutto + qualche mandorla",dettaglio:"1 frutto fresco + 10g mandorle",extra:true},
+    ]},
+    pranzo:{opzioni:[
+      {id:"pr-dom-a",label:"Pasta a scelta + pollo/tacchino + verdura",dettaglio:"90g pasta + 140g carne bianca + 150g verdura + 1.5 cuc. olio evo"},
+      {id:"pr-dom-b",label:"Pasta + pesce a scelta + verdura",dettaglio:"90g pasta + 140g pesce a scelta + 150g verdura + 1.5 cuc. olio evo"},
+      {id:"pr-dom-x1",label:"Pasta fredda al pomodoro + pollo ai ferri + verdura",dettaglio:"🍝 90g pasta fredda con pomodorini e basilico · 🍗 140g pollo ai ferri · 🥗 150g insalata mista + 1.5 cuc. olio evo",extra:true},
+      {id:"pr-dom-x2",label:"Farro freddo al limone + tacchino + feta e verdure",dettaglio:"🌾 90g farro freddo con limone · 🍗 140g tacchino ai ferri · 🥗 60g feta, pomodorini, cetrioli + 1.5 cuc. olio evo",extra:true},
+    ]},
+    spuntino_pomeriggio:{opzioni:[
+      {id:"sp-dom-a",label:"Yogurt/Skyr + frutto",dettaglio:"125g yogurt/skyr + 1 frutto di stagione con buccia"},
+      {id:"sp-dom-x1",label:"Anguria fresca",dettaglio:"250g anguria fresca — idratante e leggera",extra:true},
+    ]},
+    cena:{opzioni:[
+      {id:"ce-dom-a",label:"Hamburger pollo/tacchino + insalata + patate",dettaglio:"150g hamburger pollo/tacchino + 200g insalata mista + 180g patate al forno + 1.5 cuc. olio evo"},
+      {id:"ce-dom-b",label:"Pesce (nasello/merluzzo/sarde) + verdura + patate",dettaglio:"150g pesce a scelta + 200g verdura cotta + 180g patate + 1.5 cuc. olio evo"},
+      {id:"ce-dom-x1",label:"Pollo ai ferri + insalata estiva + patate lesse",dettaglio:"150g pollo ai ferri + 200g insalata mista + pomodorini + cetrioli + 180g patate lesse fredde + 1.5 cuc. olio evo",extra:true},
+      {id:"ce-dom-x2",label:"Tacchino con pomodori e basilico + pane",dettaglio:"150g fesa di tacchino + 200g pomodori a fette + basilico + 50g pane integrale + 1.5 cuc. olio evo",extra:true},
+    ]}
+  }
+};
+
+const PASTI_META={
+  colazione:{label:"Colazione",orario:"",icon:"☀️"},
+  spuntino_mattina:{label:"Spuntino mattina",orario:"10:30",icon:"🍎"},
+  pranzo:{label:"Pranzo",orario:"13:00",icon:"🥗"},
+  spuntino_pomeriggio:{label:"Spuntino pomeriggio",orario:"18:00",icon:"🫐"},
+  cena:{label:"Cena",orario:"21:00",icon:"🌙"},
+};
+
+const CAT_KW={
+  "🥛 Latticini & Uova":["latte","yogurt","ricotta","parmigiano","formaggio","uova","skyr","kefir","mozzarella"],
+  "🥩 Carne & Salumi":["pollo","tacchino","vitello","bresaola","prosciutto","fesa","manzo","hamburger"],
+  "🐟 Pesce":["tonno","salmone","pesce","nasello","merluzzo","sarde"],
+  "🌾 Cereali & Pasta":["riso","grano","farro","orzo","pasta","avena","fiocchi","fette biscottate","cereali","biscotti","pane","wasa","gallette","farina","muesli","granola"],
+  "🥬 Verdura":["broccoli","spinaci","zucca","zucchine","patate","porri","asparagi","piselli","insalata","cetrioli","pomodori","finocchi","radicchio","carote","rucola","cime di rapa"],
+  "🍓 Frutta":["banane","kiwi","frutta","bosco","arance","limoni","pesca","pesche","albicocche","fragole","anguria","melone"],
+  "🫙 Dispensa":["olio","miele","marmellata","crema arachidi","cacao","lievito","curry","zafferano","olive","capperi"],
+  "💊 Integratori":["creatina","vitamina","barretta"],
+  "🌿 Frutta secca":["mandorle","noci","frutta secca"],
+};
+
+// STATE
+let selectedDay="Lunedì",expandedPasto=null;
+let disliked=new Set(),selections={};
+let shopChecked=new Set(),shopBought=new Set(),shopFilter="all";
+let shopHidden=new Set();
+let eaten=new Set();
+
+GIORNI.forEach(g=>{
+  selections[g]={};
+  Object.keys(PIANO[g]).forEach(p=>{
+    selections[g][p]=PIANO[g][p].opzioni[0].id;
+    eaten.add(`${g}-${p}`);
+  });
+});
+
+function getActive(g,p){
+  const opzioni=PIANO[g][p].opzioni;
+  const cur=opzioni.find(o=>o.id===selections[g][p]);
+  if(cur&&!disliked.has(cur.id))return{opt:cur,switched:false};
+  const alt=opzioni.find(o=>!disliked.has(o.id));
+  if(alt)return{opt:alt,switched:true};
+  return{opt:opzioni[0],switched:false};
+}
+
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+function renderDayTabs(){
+  document.getElementById("day-tabs").innerHTML=GIORNI.map(g=>
+    `<button class="day-tab${g===selectedDay?" active":""}" onclick="selectDay('${g}')">${g==="Sabato"?"🎉 ":""}${g.slice(0,3)}</button>`
+  ).join("");
+}
+
+function renderDayHeader(){
+  document.getElementById("day-name").textContent=selectedDay;
+  document.getElementById("workout-badge").style.display=
+    PIANO[selectedDay].colazione.tipo==="pre-allenamento"?"inline-block":"none";
+}
+
+function renderMeals(){
+  document.getElementById("meals-container").innerHTML=Object.entries(PASTI_META).map(([pk,meta])=>{
+    const pd=PIANO[selectedDay][pk];
+    if(!pd)return"";
+    const{opt:active,switched}=getActive(selectedDay,pk);
+    const isExp=expandedPasto===`${selectedDay}-${pk}`;
+    const eKey=`${selectedDay}-${pk}`;
+    const isEaten=eaten.has(eKey);
+
+    const originals=pd.opzioni.filter(o=>!o.extra);
+    const extras=pd.opzioni.filter(o=>o.extra);
+
+    function optHtml(opt){
+      const isX=disliked.has(opt.id);
+      const isSel=active.id===opt.id&&!isX;
+      const isAuto=switched&&isSel;
+      const isExtra=!!opt.extra;
+      let cls="opt-row"+(isSel?" selected":"")+(isX?" excluded":"")+(isExtra?" extra":"")+(isAuto?" auto-switched":"");
+      return`<div class="${cls}">
+        <div class="opt-check${isSel?" on":""}" onclick="pickOption('${selectedDay}','${pk}','${opt.id}')">${isSel?"✓":""}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="opt-name">${opt.label}</div>
+          <div class="opt-detail">${opt.dettaglio}</div>
+          ${isAuto?`<span class="opt-tag auto">⚡ selezionata automaticamente</span>`:""}
+          ${isExtra&&!isAuto?`<span class="opt-tag extra">✨ alternativa</span>`:""}
+        </div>
+        <button class="btn-exclude" onclick="toggleExclude('${opt.id}','${selectedDay}','${pk}')">${isX?"↩":"🚫"}</button>
+      </div>`;
+    }
+
+    const optsHtml=
+      `<div class="section-label original">📋 Dal piano del nutrizionista</div>`+originals.map(optHtml).join("")+
+      (extras.length?`<div class="section-label extra">✨ Alternative suggerite (stesse calorie)</div>`+extras.map(optHtml).join(""):"");
+
+    return`<div class="meal-card" style="${!isEaten?"opacity:.55;":""}">
+      <div class="meal-header${isExp?" open":""}" onclick="toggleMeal('${selectedDay}','${pk}')">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="meal-icon">${meta.icon}</span>
+          <div>
+            <span class="meal-label">${meta.label}</span>${meta.orario?`<span class="meal-orario">· ${meta.orario}</span>`:""}
+            <div class="meal-current" style="${!isEaten?"text-decoration:line-through;color:#aaa;":""}">${active.label}${switched?" ⚡":""}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button onclick="event.stopPropagation();toggleEaten('${eKey}')" style="padding:4px 9px;border-radius:10px;border:1.5px solid ${isEaten?"#a5d6a7":"#ef9a9a"};background:${isEaten?"#e8f5e9":"#fff5f5"};color:${isEaten?"#2d7a34":"#c62828"};font-size:11px;font-weight:700;white-space:nowrap;">${isEaten?"✓ Mangiato":"✗ Non mangiato"}</button>
+          <span class="meal-arrow${isExp?" open":""}">▾</span>
+        </div>
+      </div>
+      <div class="meal-body${isExp?" open":""}">
+        <div class="meal-hint">Scegli · 🚫 escludi · ✨ alternative</div>
+        ${optsHtml}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleEaten(eKey){
+  if(eaten.has(eKey))eaten.delete(eKey);
+  else eaten.add(eKey);
+  renderMeals();renderKcal();
+  showToast(eaten.has(eKey)?"✓ Conteggiato nel calcolo":"✗ Escluso dal calcolo calorie");
+}
+
+function selectDay(g){selectedDay=g;expandedPasto=null;renderDayTabs();renderDayHeader();renderMeals();renderCustomMeals();renderKcal();}
+function toggleMeal(g,p){const k=`${g}-${p}`;expandedPasto=expandedPasto===k?null:k;renderMeals();}
+function pickOption(g,p,id){if(disliked.has(id))return;selections[g][p]=id;renderMeals();renderShop();renderKcal();}
+function toggleExclude(id,g,p){
+  if(disliked.has(id)){disliked.delete(id);showToast("✅ Opzione riabilitata");}
+  else{
+    disliked.add(id);
+    if(selections[g][p]===id){
+      const alt=PIANO[g][p].opzioni.find(o=>!disliked.has(o.id));
+      if(alt){selections[g][p]=alt.id;showToast(`⚡ Cambiato in: ${alt.label}`);}
+      else showToast("⚠️ Nessuna alternativa disponibile");
+    }else showToast("🚫 Opzione esclusa");
+  }
+  renderMeals();renderShop();renderKcal();
+}
+
+// ── CALORIE ───────────────────────────────────────────────────────────────
+const KCAL_DB={
+  "yogurt magro":52,"skyr":63,"kefir":52,"yogurt greco":97,"yogurt parz":65,
+  "parmigiano":392,"feta":264,"ricotta":136,"primo sale":210,"caprino":230,
+  "stracchino":130,"robiola":220,"formaggio magro":200,"fiocchi latte":99,
+  "uovo":78,"uova":78,
+  "pasta":353,"riso":350,"farro":340,"bulgur":342,"quinoa":368,"orzo":354,
+  "avena":389,"fiocchi":389,"cereali":380,"cornflakes":380,
+  "fette biscottate":410,"pane integrale":247,"pane":265,"biscotti":420,
+  "gallette":390,"cracker":430,
+  "alici":96,"tonno":116,"sgombro":191,"salmone":208,"orata":90,
+  "nasello":82,"merluzzo":82,"sarde":185,"pesce spada":121,"spigola":82,
+  "rombo":91,"cernia":96,
+  "pollo":165,"tacchino":157,"manzo":215,"hamburger":200,"fettina":215,
+  "bresaola":151,"prosciutto cotto":136,"fesa":107,"cotto magro":136,
+  "lenticchie":290,"piselli":81,
+  "zucchine":17,"broccoli":34,"brocoli":34,"cime di rapa":22,"melanzane":24,
+  "asparagi":20,"patate":77,"spinaci":23,"verza":25,"fagiolini":31,
+  "carote":41,"finocchi":31,"radicchio":23,"verdura":25,"insalata":15,
+  "banana":89,"pera":57,"frutti di bosco":43,"mela":52,"frutto":55,"frutta":55,
+  "olio":884,
+  "mandorle":579,"noci":654,"nocciole":628,"anacardi":553,"uvetta":299,
+  "frutta secca":580,
+  "miele":304,"marmellata":250,"barretta":380,
+  "tofu":76,"tempeh":190,"seitan":370,
+};
+
+function estimateKcal(dettaglio){
+  if(!dettaglio)return 0;
+  const d=dettaglio.toLowerCase();
+  let total=0;
+  const re=/(\d+(?:\.\d+)?)\s*g\s+([a-zàèìòù ]+)/g;
+  let m;
+  while((m=re.exec(d))!==null){
+    const qty=parseFloat(m[1]);
+    const kw=m[2].trim().split(" ")[0];
+    const kcalPer100=Object.entries(KCAL_DB).find(([k])=>kw.startsWith(k)||k.startsWith(kw))?.[1]||0;
+    total+=qty/100*kcalPer100;
+  }
+  const oilM=d.match(/(\d+(?:[.,]\d+)?)\s*cucchiai(?:o)?\s*(?:e\s*mezzo)?\s*(?:evo|olio)/);
+  if(oilM){
+    const spoons=parseFloat(oilM[1].replace(",","."))+( d.includes("mezzo")?0.5:0);
+    total+=spoons*10*KCAL_DB["olio"]/100;
+  } else if(d.includes("olio")){total+=15*KCAL_DB["olio"]/100;}
+  const eggM=d.match(/(\d)\s*uov/);
+  if(eggM) total+=parseInt(eggM[1])*KCAL_DB["uovo"];
+  if(d.includes("frutto")&&!d.match(/\d+g\s+frut/)) total+=100;
+  if(d.includes("barretta")&&!d.match(/\d+g/)) total+=150;
+  return Math.round(total);
+}
+
+const DAILY_TARGET=1600;
+
+// ── PASTI LIBERI ──────────────────────────────────────────────────────────
+const CATEGORIE_PASTO=[
+  {key:"colazione",label:"☀️ Colazione"},
+  {key:"spuntino_mattina",label:"🍎 Spuntino mattina"},
+  {key:"pranzo",label:"🥗 Pranzo"},
+  {key:"spuntino_pomeriggio",label:"🫐 Spuntino pomeriggio"},
+  {key:"cena",label:"🌙 Cena"},
+  {key:"altro",label:"🍽️ Altro"},
+];
+let customMeals={};
+let customCounter=0;
+GIORNI.forEach(g=>{ customMeals[g]=[]; });
+
+function addCustomMeal(){
+  const id="cm-"+(++customCounter);
+  customMeals[selectedDay].push({id, name:"Pasto a piacere", categoria:"altro", ingredients:[], expanded:true});
+  renderCustomMeals(); renderKcal();
+}
+
+function removeCustomMeal(id){
+  customMeals[selectedDay]=customMeals[selectedDay].filter(m=>m.id!==id);
+  renderCustomMeals(); renderKcal();
+}
+
+function toggleCustomMeal(id){
+  const m=customMeals[selectedDay].find(m=>m.id===id);
+  if(m){m.expanded=!m.expanded; renderCustomMeals();}
+}
+
+function saveCustomMeal(id){
+  const m=customMeals[selectedDay].find(m=>m.id===id);
+  if(!m)return;
+  m.name=document.getElementById(`cm-name-${id}`).value.trim()||"Pasto a piacere";
+  m.categoria=document.getElementById(`cm-cat-${id}`).value;
+  m.ingredients=[];
+  const rows=document.querySelectorAll(`[data-cmid="${id}"]`);
+  rows.forEach(row=>{
+    const n=row.querySelector(".ing-name").value.trim();
+    const q=parseFloat(row.querySelector(".ing-qty").value)||0;
+    if(!n)return;
+    const kw=n.toLowerCase().split(" ")[0];
+    const kcalPer100=Object.entries(KCAL_DB).find(([k])=>kw.startsWith(k)||k.startsWith(kw))?.[1]||0;
+    const kcal=Math.round(q/100*kcalPer100);
+    m.ingredients.push({name:n,qty:q,kcal});
+  });
+  m.expanded=false;
+  renderCustomMeals(); renderKcal();
+  showToast("✅ Pasto salvato!");
+}
+
+function renderCustomMeals(){
+  const container=document.getElementById("custom-meals-container");
+  const meals=customMeals[selectedDay];
+  if(!meals.length){container.innerHTML="";return;}
+  container.innerHTML=meals.map(m=>{
+    const totKcal=m.ingredients.reduce((s,i)=>s+i.kcal,0);
+    const catLabel=CATEGORIE_PASTO.find(c=>c.key===m.categoria)?.label||"🍽️ Altro";
+    return`<div class="custom-meal-card">
+      <div class="custom-meal-header${m.expanded?" open":""}" onclick="toggleCustomMeal('${m.id}')">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">🍽️</span>
+          <div>
+            <span class="meal-label">${m.name}</span>
+            <div class="meal-current">${catLabel} · ${m.ingredients.length?m.ingredients.map(i=>`${i.name} (${i.qty}g)`).join(", "):"Nessun ingrediente"} ${totKcal?`· ~${totKcal} kcal`:""}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="custom-del-btn" onclick="event.stopPropagation();removeCustomMeal('${m.id}')">&#128465;</button>
+          <span class="meal-arrow${m.expanded?" open":""}">&#9662;</span>
+        </div>
+      </div>
+      <div class="custom-meal-body${m.expanded?" open":""}">
+        <div style="margin-bottom:8px;">
+          <input id="cm-name-${m.id}" type="text" value="${m.name}" placeholder="Nome del pasto..." class="custom-ing-input" style="width:100%;margin-bottom:8px;"/>
+          <select id="cm-cat-${m.id}" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #c0ddc0;font-family:Georgia,serif;font-size:13px;color:#1a2e1a;background:white;outline:none;">
+            ${CATEGORIE_PASTO.map(c=>`<option value="${c.key}"${m.categoria===c.key?" selected":""}>${c.label}</option>`).join("")}
+          </select>
+        </div>
+        <div class="section-label original" style="margin-bottom:6px;">Ingredienti</div>
+        <div id="cm-ings-${m.id}">
+          ${(m.ingredients.length?m.ingredients:[{name:"",qty:""}]).map((ing)=>`
+          <div class="custom-ing-row" data-cmid="${m.id}">
+            <input class="custom-ing-input ing-name" type="text" placeholder="Ingrediente (es: pasta)" value="${ing.name||""}"/>
+            <input class="custom-ing-qty ing-qty" type="number" placeholder="g" value="${ing.qty||""}"/>
+          </div>`).join("")}
+        </div>
+        <button class="custom-add-ing" onclick="addIngRow('${m.id}')">+ Ingrediente</button>
+        <button class="custom-save-btn" onclick="saveCustomMeal('${m.id}')">&#128190; Salva pasto</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function addIngRow(id){
+  const container=document.getElementById(`cm-ings-${id}`);
+  const div=document.createElement("div");
+  div.className="custom-ing-row";
+  div.dataset.cmid=id;
+  div.innerHTML=`<input class="custom-ing-input ing-name" type="text" placeholder="Ingrediente"/><input class="custom-ing-qty ing-qty" type="number" placeholder="g"/>`;
+  container.appendChild(div);
+}
+
+function renderKcal(){
+  let breakdown=[];
+  let total=0;
+  Object.entries(PASTI_META).forEach(([pk,meta])=>{
+    if(!PIANO[selectedDay][pk])return;
+    const eKey=`${selectedDay}-${pk}`;
+    const{opt}=getActive(selectedDay,pk);
+    const kcal=estimateKcal(opt.dettaglio);
+    const counted=eaten.has(eKey);
+    if(counted) total+=kcal;
+    breakdown.push({label:meta.label, icon:meta.icon, kcal, counted});
+  });
+  customMeals[selectedDay].forEach(m=>{
+    const kcal=m.ingredients.reduce((s,i)=>s+i.kcal,0);
+    if(kcal>0){total+=kcal; breakdown.push({label:m.name,icon:"&#127869;",kcal,counted:true});}
+  });
+  document.getElementById("kcal-total").textContent=total?total+"":"—";
+  const pct=Math.min(Math.round(total/getDailyTarget()*100),120);
+  const bar=document.getElementById("kcal-bar");
+  bar.style.width=pct+"%";
+  bar.className="kcal-bar-fill"+(total>getDailyTarget()+200?" over":"");
+  document.getElementById("kcal-breakdown").innerHTML=breakdown.map(b=>
+    `<div class="kcal-item" style="${!b.counted?"opacity:.4;":""}">
+      <div class="kcal-item-val" style="${!b.counted?"text-decoration:line-through;":""}">${b.kcal}</div>
+      <div class="kcal-item-lbl">${b.icon} ${b.label}${!b.counted?" ✗":""}</div>
+    </div>`
+  ).join("");
+}
+
+// ── SHOP
+function buildShopList(){
+  const items={};
+  const add=(key,name,qty)=>{if(!items[key])items[key]={key,name,qty};};
+  add("latte","Latte parzialmente scremato","uso quotidiano");
+  add("olio_evo","Olio extravergine di oliva","uso quotidiano");
+  add("creatina","Creatina monoidrato (EtichSport)","3g/giorno");
+  add("vitD","Vitamina D (integratore)","come prescritto");
+
+  const seen=new Set();
+  GIORNI.forEach(g=>{
+    Object.keys(PASTI_META).forEach(p=>{
+      if(!PIANO[g][p])return;
+      const{opt}=getActive(g,p);
+      if(!opt||seen.has(opt.id))return;
+      seen.add(opt.id);
+      const d=opt.dettaglio.toLowerCase();
+      if(d.includes("yogurt greco"))add("yogurt_greco","Yogurt greco magro","più confezioni");
+      if(d.includes("yogurt/skyr")||d.includes("skyr")||d.includes("kefir"))add("skyr","Yogurt / Skyr / Kefir","più confezioni");
+      if(d.includes("banana"))add("banana","Banane","più frutti");
+      if(d.includes("kiwi"))add("kiwi","Kiwi","più frutti");
+      if(d.includes("fragole"))add("fragole","Fragole fresche","acquisto");
+      if(d.includes("pesca")||d.includes("pesche"))add("pesche","Pesche fresche","acquisto");
+      if(d.includes("albicocche"))add("albicocche","Albicocche","acquisto");
+      if(d.includes("anguria"))add("anguria","Anguria","acquisto");
+      if(d.includes("melone"))add("melone","Melone","acquisto");
+      if(d.includes("frutta a pezzi")||d.includes("frutto"))add("frutta","Frutta fresca di stagione","variata");
+      if(d.includes("frutti di bosco"))add("frutti_bosco","Frutti di bosco freschi o surgelati","acquisto");
+      if(d.includes("fiocchi avena")||d.includes("fiocchi di avena")||d.includes("fiocchi"))add("avena","Fiocchi di avena","1 confezione");
+      if(d.includes("muesli"))add("muesli","Muesli senza zucchero","1 confezione");
+      if(d.includes("granola"))add("granola","Granola senza zucchero","1 confezione");
+      if(d.includes("miele"))add("miele","Miele","1 vasetto");
+      if(d.includes("marmellata"))add("marmellata","Marmellata senza zuccheri aggiunti","1 vasetto");
+      if(d.includes("crema arachidi")||d.includes("burro arachidi"))add("crema_ar","Crema / Burro di arachidi 100%","1 vasetto");
+      if(d.includes("fette biscottate"))add("fette_bisc","Fette biscottate integrali","1 confezione");
+      if(d.includes("cereali integrali")||d.includes("cornflakes"))add("cereali","Cereali integrali / cornflakes","1 confezione");
+      if(d.includes("biscotti secchi"))add("biscotti","Biscotti secchi ai cereali","1 confezione");
+      if(d.includes("gallette"))add("gallette","Gallette di riso","1 pacchetto");
+      if(d.includes("pane"))add("pane","Pane integrale / pane di segale","acquisto");
+      if(d.includes("wasa"))add("wasa","Fette Wasa integrali o al farro","1 pacchetto");
+      if(d.includes("albume")||d.includes("uova")||d.includes("uovo"))add("uova","Uova fresche","cartone grande");
+      if(d.includes("farina"))add("farina","Farina integrale / d'avena","1 confezione");
+      if(d.includes("cacao"))add("cacao","Cacao amaro","1 barattolo");
+      if(d.includes("lievito"))add("lievito","Lievito per dolci","1 confezione");
+      if(d.includes("ricotta"))add("ricotta","Ricotta vaccina","più confezioni");
+      if(d.includes("parmigiano"))add("parmigiano","Parmigiano Reggiano","pezzo / busta");
+      if(d.includes("mozzarella"))add("mozzarella","Mozzarella light","acquisto");
+      if(d.includes("fesa"))add("fesa","Fesa di tacchino","acquisto");
+      if(d.includes("bresaola"))add("bresaola","Bresaola","acquisto");
+      if(d.includes("riso"))add("riso","Riso basmati / integrale","acquisto");
+      if(d.includes("grano saraceno"))add("grano_sar","Grano saraceno","acquisto");
+      if(d.includes("farro"))add("farro","Farro","acquisto");
+      if(d.includes("orzo"))add("orzo","Orzo perlato","acquisto");
+      if(d.includes("pasta"))add("pasta","Pasta (semola / integrale / grano saraceno)","più formati");
+      if(d.includes("pollo")||d.includes("straccetti"))add("pollo","Straccetti / petto di pollo","acquisto");
+      if(d.includes("tacchino")||d.includes("hamburger pollo"))add("tacchino","Petto / hamburger di tacchino","acquisto");
+      if(d.includes("vitello")||d.includes("manzo")||d.includes("carpaccio"))add("manzo","Vitello / manzo magro / carpaccio","acquisto");
+      if(d.includes("tonno"))add("tonno","Tonno al naturale (lattine)","più lattine");
+      if(d.includes("pesce a scelta")||d.includes("nasello")||d.includes("merluzzo")||d.includes("sarde"))add("pesce","Pesce a scelta (nasello/merluzzo/sarde)","acquisto");
+      if(d.includes("feta"))add("feta","Feta greca","acquisto");
+      if(d.includes("formaggio fresco")||d.includes("primo sale"))add("form_fresco","Formaggio fresco magro (primo sale)","acquisto");
+      if(d.includes("broccoli")||d.includes("broccoletti"))add("broccoli","Broccoli / broccoletti","acquisto");
+      if(d.includes("spinaci"))add("spinaci","Spinaci","acquisto");
+      if(d.includes("zucca"))add("zucca","Zucca gialla","acquisto");
+      if(d.includes("zucchine"))add("zucchine","Zucchine","acquisto");
+      if(d.includes("asparagi"))add("asparagi","Asparagi","acquisto");
+      if(d.includes("patate")||d.includes("patata"))add("patate","Patate","acquisto");
+      if(d.includes("porri"))add("porri","Porri","acquisto");
+      if(d.includes("insalata")||d.includes("lattuga")||d.includes("rucola"))add("insalata","Insalata mista / rucola / lattuga","acquisto");
+      if(d.includes("cetrioli"))add("cetrioli","Cetrioli","acquisto");
+      if(d.includes("pomodori")||d.includes("pomodorini"))add("pomodori","Pomodori / pomodorini","acquisto");
+      if(d.includes("carote"))add("carote","Carote","acquisto");
+      if(d.includes("radicchio"))add("radicchio","Radicchio rosso","acquisto");
+      if(d.includes("cime di rapa"))add("cime_rapa","Cime di rapa","acquisto");
+      if(d.includes("barretta"))add("barretta","Barretta Nutzer Prozis","più barrette");
+      if(d.includes("arancia")||d.includes("spremuta"))add("arance","Arance per spremuta","acquisto");
+      if(d.includes("limone"))add("limone","Limoni","acquisto");
+      if(d.includes("curry"))add("curry","Curry in polvere","1 barattolo");
+      if(d.includes("zafferano"))add("zafferano","Zafferano","bustine");
+      if(d.includes("mandorle"))add("mandorle","Mandorle","acquisto");
+      if(d.includes("noci"))add("noci","Noci","acquisto");
+      if(d.includes("olive"))add("olive","Olive nere","piccolo vasetto");
+      if(d.includes("capperi"))add("capperi","Capperi","1 vasetto");
+    });
+  });
+  return Object.values(items);
+}
+
+function categorize(items){
+  const result={};const assigned=new Set();
+  Object.entries(CAT_KW).forEach(([cat,kws])=>{
+    const ci=items.filter(i=>kws.some(kw=>i.name.toLowerCase().includes(kw)));
+    if(ci.length){result[cat]=ci;ci.forEach(i=>assigned.add(i.key));}
+  });
+  const rest=items.filter(i=>!assigned.has(i.key));
+  if(rest.length)result["📦 Altro"]=rest;
+  return result;
+}
+
+function renderShop(){
+  const items=buildShopList();
+  const cats=categorize(items);
+  const visibleItems=items.filter(i=>!shopHidden.has(i.key));
+  const total=visibleItems.length;
+  const bought=visibleItems.filter(i=>shopBought.has(i.key)).length;
+  const pct=total>0?Math.round(bought/total*100):0;
+  document.getElementById("shop-sub").textContent=`${bought} di ${total} prodotti acquistati`;
+  document.getElementById("shop-pct").textContent=pct+"%";
+  document.getElementById("progress-fill").style.width=pct+"%";
+  document.querySelectorAll(".filter-btn").forEach((b,i)=>{
+    b.classList.toggle("active",["all","todo","done"][i]===shopFilter);
+  });
+  let html="";
+  Object.entries(cats).forEach(([cat,citems])=>{
+    const visible=citems.filter(item=>{
+      if(shopHidden.has(item.key))return false;
+      if(shopFilter==="todo")return!shopBought.has(item.key);
+      if(shopFilter==="done")return shopBought.has(item.key);
+      return true;
+    });
+    if(!visible.length)return;
+    html+=`<div class="cat-label">${cat}</div><div class="cat-block">`;
+    visible.forEach((item)=>{
+      const isB=shopBought.has(item.key);
+      const isCk=shopChecked.has(item.key);
+      html+=`<div class="shop-item${isB?" bought":isCk?" incart":""}">
+        <button class="btn-buy${isB?" on":""}" onclick="toggleBought('${item.key}')">${isB?"✓":""}</button>
+        <div style="flex:1;min-width:0;">
+          <div class="item-name">${item.name}</div>
+          <div class="item-qty">${item.qty}</div>
+        </div>
+        ${isB
+          ?`<span class="ok-tag">✔ ok</span>`
+          :`<button class="btn-cart${isCk?" on":""}" onclick="toggleCart('${item.key}')">${isCk?"🛒 Carrello":"+ Carrello"}</button>`
+        }
+        <button onclick="hideShopItem('${item.key}')" style="margin-left:4px;padding:4px 7px;border-radius:8px;border:1.5px solid #f8d7da;background:transparent;color:#c0392b;font-size:12px;font-weight:700;">✕</button>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  if(shopHidden.size>0){
+    html+=`<div style="text-align:center;margin-top:10px;">
+      <button onclick="restoreHidden()" style="padding:6px 16px;border-radius:16px;border:1.5px solid #a5d6a7;background:transparent;color:#2d7a34;font-size:12px;font-weight:600;">↩ Ripristina ${shopHidden.size} element${shopHidden.size===1?"o":"i"} rimoss${shopHidden.size===1?"o":"i"}</button>
+    </div>`;
+  }
+  document.getElementById("shop-list").innerHTML=html;
+}
+
+function toggleBought(key){
+  if(shopBought.has(key))shopBought.delete(key);
+  else{shopBought.add(key);shopChecked.delete(key);showToast("✅ Acquistato!");}
+  renderShop();saveState();
+}
+function toggleCart(key){
+  if(shopChecked.has(key))shopChecked.delete(key);
+  else{shopChecked.add(key);showToast("🛒 Aggiunto al carrello");}
+  renderShop();saveState();
+}
+function hideShopItem(key){
+  shopHidden.add(key);
+  showToast("🗑 Prodotto rimosso");
+  renderShop();saveState();
+}
+function restoreHidden(){
+  shopHidden.clear();
+  showToast("↩ Prodotti ripristinati");
+  renderShop();saveState();
+}
+function setFilter(f){shopFilter=f;renderShop();}
+function resetShop(){shopChecked.clear();shopBought.clear();shopHidden.clear();renderShop();showToast("🔄 Lista azzerata");}
+
+// LISTA LIBERA
+let freeItems=[];
+let freeCounter=0;
+
+function addFreeItem(){
+  const inp=document.getElementById("free-input");
+  const val=inp.value.trim();
+  if(!val)return;
+  val.split(",").map(s=>s.trim()).filter(Boolean).forEach(name=>{
+    freeItems.push({id:"free-"+(++freeCounter),name,bought:false});
+  });
+  inp.value="";
+  renderFreeList();
+  showToast("✅ Aggiunto!");
+}
+
+function toggleFreeBought(id){
+  const item=freeItems.find(i=>i.id===id);
+  if(item){item.bought=!item.bought;renderFreeList();}
+}
+
+function deleteFreeItem(id){
+  freeItems=freeItems.filter(i=>i.id!==id);
+  renderFreeList();
+}
+
+function renderFreeList(){
+  const el=document.getElementById("free-list");
+  if(!freeItems.length){el.innerHTML="";return;}
+  let html=`<div class="cat-block" style="margin-top:8px;">`;
+  freeItems.forEach(item=>{
+    html+=`<div class="shop-item${item.bought?" bought":""}">
+      <button class="btn-buy${item.bought?" on":""}" onclick="toggleFreeBought('${item.id}')">${item.bought?"✓":""}</button>
+      <div style="flex:1;min-width:0;">
+        <div class="item-name">${item.name}</div>
+      </div>
+      ${item.bought
+        ?`<span class="ok-tag">&#10004; ok</span>`
+        :`<button onclick="deleteFreeItem('${item.id}')" style="padding:4px 9px;border-radius:12px;border:1.5px solid #f8d7da;background:transparent;color:#c0392b;font-size:11px;font-weight:600;flex-shrink:0;">&#10005; Rimuovi</button>`
+      }
+    </div>`;
+  });
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+function switchView(v){
+  document.getElementById("view-menu").classList.toggle("active",v==="menu");
+  document.getElementById("view-spesa").classList.toggle("active",v==="spesa");
+  document.getElementById("view-stats").classList.toggle("active",v==="stats");
+  document.querySelectorAll(".nav-btn").forEach((b,i)=>b.classList.toggle("active",["menu","spesa","stats"][i]===v));
+  if(v==="spesa")renderShop();
+  if(v==="stats"){renderBiaSummary();renderKcalChart();renderAdherence();}
+}
+
+// ── BIA ────────────────────────────────────────────────────────────────────
+let biaData={peso:"",bmi:"",grassaPct:"",grassaKg:"",magra:"",acqua:"",bmr:"",target:""};
+
+function saveBia(){
+  biaData.peso=document.getElementById("bia-peso").value;
+  biaData.bmi=document.getElementById("bia-bmi").value;
+  biaData.grassaPct=document.getElementById("bia-grassa-pct").value;
+  biaData.grassaKg=document.getElementById("bia-grassa-kg").value;
+  biaData.magra=document.getElementById("bia-magra").value;
+  biaData.acqua=document.getElementById("bia-acqua").value;
+  biaData.bmr=document.getElementById("bia-bmr").value;
+  biaData.target=document.getElementById("bia-target").value;
+  renderBiaSummary();renderKcalChart();saveState();
+}
+
+function loadBiaFields(){
+  document.getElementById("bia-peso").value=biaData.peso||"";
+  document.getElementById("bia-bmi").value=biaData.bmi||"";
+  document.getElementById("bia-grassa-pct").value=biaData.grassaPct||"";
+  document.getElementById("bia-grassa-kg").value=biaData.grassaKg||"";
+  document.getElementById("bia-magra").value=biaData.magra||"";
+  document.getElementById("bia-acqua").value=biaData.acqua||"";
+  document.getElementById("bia-bmr").value=biaData.bmr||"";
+  document.getElementById("bia-target").value=biaData.target||"";
+}
+
+function renderBiaSummary(){
+  const el=document.getElementById("bia-summary");
+  if(!biaData.peso&&!biaData.bmi){el.innerHTML="";return;}
+  const badges=[];
+  if(biaData.peso) badges.push(`⚖️ ${biaData.peso} kg`);
+  if(biaData.bmi){
+    const b=parseFloat(biaData.bmi);
+    const cls=b<18.5||b>=30?"warn":"";
+    const label=b<18.5?"Sottopeso":b<25?"Normopeso":b<30?"Sovrappeso":"Obesità";
+    badges.push(`<span class="bia-badge ${cls}">BMI ${biaData.bmi} · ${label}</span>`);
+  }
+  if(biaData.grassaPct) badges.push(`🔴 Grassa ${biaData.grassaPct}%`);
+  if(biaData.magra) badges.push(`💪 Magra ${biaData.magra} kg`);
+  if(biaData.acqua) badges.push(`💧 Acqua ${biaData.acqua}%`);
+  if(biaData.bmr) badges.push(`🔥 BMR ${biaData.bmr} kcal`);
+  if(biaData.target) badges.push(`🎯 Target ${biaData.target} kcal/die`);
+  el.innerHTML=`<div class="bia-badges">${badges.map(b=>b.startsWith("<")?b:`<span class="bia-badge">${b}</span>`).join("")}</div>`;
+}
+
+function getDailyTarget(){return parseInt(biaData.target)||1600;}
+
+function calcDayKcal(g){
+  let total=0;
+  Object.entries(PASTI_META).forEach(([pk])=>{
+    if(!PIANO[g][pk])return;
+    if(!eaten.has(`${g}-${pk}`))return;
+    const{opt}=getActive(g,pk);
+    total+=estimateKcal(opt.dettaglio);
+  });
+  (customMeals[g]||[]).forEach(m=>{total+=m.ingredients.reduce((s,i)=>s+i.kcal,0);});
+  return total;
+}
+
+function renderKcalChart(){
+  const target=getDailyTarget();
+  const vals=GIORNI.map(g=>({g,kcal:calcDayKcal(g)}));
+  const max=Math.max(...vals.map(v=>v.kcal),target)*1.1||target*1.1;
+  const el=document.getElementById("kcal-chart");
+  let html=`<div class="kcal-bar-row">`;
+  vals.forEach(({g,kcal})=>{
+    const h=kcal?Math.round(kcal/max*70):0;
+    const over=kcal>target+150;
+    const color=kcal===0?"#d0e8d0":over?"#ef9a9a":"#66bb6a";
+    html+=`<div class="kcal-bar-col">
+      <div class="kcal-bar-val">${kcal||""}</div>
+      <div class="kcal-bar-wrap"><div class="kcal-bar-inner" style="height:${h}px;background:${color};"></div></div>
+      <div class="kcal-bar-lbl">${g.slice(0,3)}</div>
+    </div>`;
+  });
+  html+=`</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+    <div style="width:24px;height:2px;background:#2d7a34;border-radius:2px;"></div>
+    <span style="font-size:10px;color:#4a7a4a;">Target ${target} kcal/die</span>
+    <span style="font-size:10px;color:#ef9a9a;margin-left:8px;">■</span><span style="font-size:10px;color:#7aaa7a;">Sopra target</span>
+  </div>`;
+  el.innerHTML=html;
+}
+
+function renderAdherence(){
+  const el=document.getElementById("adherence-chart");
+  const sumEl=document.getElementById("adherence-summary");
+  let totalPasti=0,totalMangiati=0;
+  let html="";
+  GIORNI.forEach(g=>{
+    const pasti=Object.keys(PASTI_META).filter(pk=>PIANO[g][pk]);
+    const mangiati=pasti.filter(pk=>eaten.has(`${g}-${pk}`)).length;
+    const pct=pasti.length?Math.round(mangiati/pasti.length*100):0;
+    totalPasti+=pasti.length; totalMangiati+=mangiati;
+    const color=pct>=80?"#66bb6a":pct>=50?"#ffb300":"#ef5350";
+    html+=`<div class="adh-row">
+      <div class="adh-day">${g.slice(0,3)}</div>
+      <div class="adh-track"><div class="adh-fill" style="width:${pct}%;background:${color};"></div></div>
+      <div class="adh-pct">${pct}%</div>
+      <div class="adh-dot" style="background:${color};"></div>
+    </div>`;
+  });
+  el.innerHTML=html;
+  const totPct=totalPasti?Math.round(totalMangiati/totalPasti*100):0;
+  const emoji=totPct>=80?"🌟":totPct>=60?"👍":totPct>=40?"💪":"📈";
+  const msg=totPct>=80?"Ottima settimana!":totPct>=60?"Buon lavoro, continua così!":totPct>=40?"Puoi migliorare!":"Dai, ci si allena!";
+  sumEl.innerHTML=`<div style="background:#f0f8f0;border-radius:10px;padding:10px 12px;text-align:center;">
+    <span style="font-size:22px;">${emoji}</span>
+    <div style="font-size:16px;font-weight:700;color:#2d7a34;margin-top:4px;">${totPct}% aderenza settimanale</div>
+    <div style="font-size:12px;color:#7aaa7e;margin-top:2px;">${msg} · ${totalMangiati}/${totalPasti} pasti seguiti</div>
+  </div>`;
+}
+
+// ── PERSISTENZA localStorage ──────────────────────────────────────────────
+const LS_KEY="dieta-erika-v1";
+
+function saveState(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      selectedDay,selections,
+      disliked:[...disliked],eaten:[...eaten],
+      shopChecked:[...shopChecked],shopBought:[...shopBought],shopHidden:[...shopHidden],
+      freeItems,customMeals,customCounter,biaData,
+    }));
+  }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw)return;
+    const s=JSON.parse(raw);
+    if(s.selectedDay) selectedDay=s.selectedDay;
+    if(s.selections) Object.assign(selections,s.selections);
+    if(s.disliked) disliked=new Set(s.disliked);
+    if(s.eaten) eaten=new Set(s.eaten);
+    if(s.shopChecked) shopChecked=new Set(s.shopChecked);
+    if(s.shopBought) shopBought=new Set(s.shopBought);
+    if(s.shopHidden) shopHidden=new Set(s.shopHidden);
+    if(s.freeItems) freeItems=s.freeItems;
+    if(s.customMeals) Object.assign(customMeals,s.customMeals);
+    if(s.customCounter) customCounter=s.customCounter;
+    if(s.biaData) Object.assign(biaData,s.biaData);
+  }catch(e){}
+}
+
+const _origPickOption=pickOption;
+pickOption=function(g,p,id){_origPickOption(g,p,id);saveState();};
+const _origToggleExclude=toggleExclude;
+toggleExclude=function(id,g,p){_origToggleExclude(id,g,p);saveState();};
+const _origToggleEaten=toggleEaten;
+toggleEaten=function(k){_origToggleEaten(k);saveState();};
+const _origToggleBought=toggleBought;
+toggleBought=function(k){_origToggleBought(k);saveState();};
+const _origToggleCart=toggleCart;
+toggleCart=function(k){_origToggleCart(k);saveState();};
+const _origToggleFreeBought=toggleFreeBought;
+toggleFreeBought=function(id){_origToggleFreeBought(id);saveState();};
+const _origDeleteFreeItem=deleteFreeItem;
+deleteFreeItem=function(id){_origDeleteFreeItem(id);saveState();};
+const _origAddFreeItem=addFreeItem;
+addFreeItem=function(){_origAddFreeItem();saveState();};
+const _origSaveCustomMeal=saveCustomMeal;
+saveCustomMeal=function(id){_origSaveCustomMeal(id);saveState();};
+const _origRemoveCustomMeal=removeCustomMeal;
+removeCustomMeal=function(id){_origRemoveCustomMeal(id);saveState();};
+const _origSelectDay=selectDay;
+selectDay=function(g){_origSelectDay(g);saveState();};
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+loadState();
+const _todayIdx=new Date().getDay();
+const _dayMap=[6,0,1,2,3,4,5];
+if(!localStorage.getItem(LS_KEY)) selectedDay=GIORNI[_dayMap[_todayIdx]];
+loadBiaFields();
+renderDayTabs();renderDayHeader();renderMeals();renderCustomMeals();renderKcal();
+</script>
+</body>
+</html>
